@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/hmac"
+	"crypto/pbkdf2"
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 	"io"
 )
@@ -99,4 +102,15 @@ func SymmetricDecryption(ciphertext []byte, key []byte) ([]byte, error) {
 	}
 
 	return plaintext, nil
+}
+
+// in this case salt is an example, but also kerberos calculate it in a deterministic way
+func GenerateClientKeyFromPwd(pwd string, keyDim int) ([]byte, error) {
+	return pbkdf2.Key(sha256.New, pwd, []byte("salt"), 4096, keyDim/8)
+}
+
+func MacData(data []byte, key []byte) []byte {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(data)
+	return mac.Sum(nil)
 }

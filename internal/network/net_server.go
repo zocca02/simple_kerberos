@@ -1,7 +1,9 @@
 package network
 
 import (
+	"fmt"
 	"net"
+	"os"
 )
 
 func ListenUDP(serverAddr net.UDPAddr, bufferSize int, onRequest func([]byte, *net.UDPAddr) ([]byte, error), onError func(err error)) {
@@ -9,7 +11,8 @@ func ListenUDP(serverAddr net.UDPAddr, bufferSize int, onRequest func([]byte, *n
 	conn, err := net.ListenUDP("udp", &serverAddr)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	defer conn.Close()

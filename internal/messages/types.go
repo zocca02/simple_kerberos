@@ -1,12 +1,23 @@
 package messages
 
-type Ticket struct {
-	Key           []byte
-	ClientId      string
-	ClientAddress string
-	TGSId         string
-	Timestamp     int64
-	Lifetime      int64
+/*
+
+C -> ASRequest -> AS
+AS -> E(TicketData) -> Reply -> C
+
+C -> TGSRequest -> TGS
+TGS -> E(TicketData) -> Reply -> C
+
+C -> ServiceRequest -> V
+V -> E(TS+1) -> Reply -> C
+
+*/
+
+type Reply struct {
+	IsError       bool
+	Message       string
+	EncryptedData []byte
+	EncDataMac    []byte
 }
 
 type ASRequest struct {
@@ -15,10 +26,21 @@ type ASRequest struct {
 	Timestamp int64
 }
 
-type ASReply struct {
-	KeyClientTGS  []byte
-	TGSId         string
-	Timestamp     int64
-	Lifetime      int64
-	CryptedTicket []byte
+type TGSRequest struct {
+	ServiceId              string
+	EncryptedTicket        []byte
+	EncTicketMac           []byte
+	EncryptedAuthenticator []byte
+	EncAuthenticatorMac    []byte
+}
+
+type ServiceRequest struct {
+	EncryptedTicket        []byte
+	EncTicketMac           []byte
+	EncryptedAuthenticator []byte
+	EncAuthenticatorMac    []byte
+}
+
+type ServiceReply struct {
+	Timestamp int64
 }

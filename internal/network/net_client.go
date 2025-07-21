@@ -1,19 +1,18 @@
 package network
 
-import "net"
+import (
+	"net"
+)
 
-func SetupClientUDPConnection(serverAddr *net.UDPAddr) *net.UDPConn {
-	conn, err := net.DialUDP("udp", nil, serverAddr)
+func SendUDPRequest(localAddr *net.UDPAddr, serverAddr *net.UDPAddr, data []byte, bufferSize int) ([]byte, error) {
 
+	conn, err := net.DialUDP("udp", localAddr, serverAddr)
 	if err != nil {
 		panic(err)
 	}
+	defer conn.Close()
 
-	return conn
-}
-
-func SendUDPRequest(conn *net.UDPConn, data []byte, bufferSize int) ([]byte, error) {
-	_, err := conn.Write(data)
+	_, err = conn.Write(data)
 	if err != nil {
 		return nil, err
 	}
@@ -25,4 +24,16 @@ func SendUDPRequest(conn *net.UDPConn, data []byte, bufferSize int) ([]byte, err
 	}
 
 	return buffer[:len], nil
+}
+
+func GetActiveIP(destIp string) (net.IP, error) {
+	conn, err := net.Dial("udp", destIp+":8000") //dummy port 8000
+	if err != nil {
+		return net.IP{}, err
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP, nil
 }

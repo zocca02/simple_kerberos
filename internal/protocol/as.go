@@ -4,75 +4,153 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	config "simple_kerberos/configs"
+	"simple_kerberos/internal/dao"
+	"simple_kerberos/internal/dto"
 	"simple_kerberos/internal/messages"
 	"simple_kerberos/internal/network"
 	"simple_kerberos/internal/security"
 	"time"
 )
 
-const lifetime int64 = 30 * 60 * 1000
-const symmKeyDim int = 128
-
-func StartAS() {
+func StartAS(serverIp string, adminPwd string) {
 	serverAddr := net.UDPAddr{
-		Port: 8888,
+		Port: config.AsPort,
+		IP:   net.ParseIP(serverIp),
 	}
 
-	fmt.Println("Kerberos AS listening on port 8888...")
-	network.ListenUDP(serverAddr, 1024, asRequestHandler, asErrorHandler)
+	startAS(serverAddr, adminPwd)
+}
+
+func StartASDefaultIp(adminPwd string) {
+	serverAddr := net.UDPAddr{
+		Port: config.AsPort,
+	}
+
+	startAS(serverAddr, adminPwd)
+}
+
+func startAS(serverAddr net.UDPAddr, adminPwd string) {
+	fmt.Println("Kerberos AS listening on " + serverAddr.IP.String() + ":" + fmt.Sprint(serverAddr.Port) + "...")
+	network.ListenUDP(serverAddr, 1024, func(b []byte, a *net.UDPAddr) ([]byte, error) {
+		return asRequestHandler(b, a, adminPwd)
+	}, asErrorHandler)
 
 }
 
-func asRequestHandler(data []byte, clientAddr *net.UDPAddr) ([]byte, error) {
+func asRequestHandler(data []byte, clientAddr *net.UDPAddr, adminPwd string) ([]byte, error) {
 	var req messages.ASRequest
 	json.Unmarshal(data, &req)
+	fmt.Println("[AS]: recieved request from " + req.ClientId + " for " + req.TGSId)
 
-	timestamp := time.Now().UnixMilli()
+	reply, err := asBuildReply(req, clientAddr, adminPwd)
+	if err != nil {
+		fmt.Println("[TGS] Server Error: ", err)
+	}
 
-	tgsKey := security.GenerateRandomKey(symmKeyDim) // DA CAMBIARE
-	keyClientTGS := security.GenerateRandomKey(symmKeyDim)
+	replyJson, err := json.Marshal(reply)
+	if err != nil {
+		return nil, err
+	}
+
+	return replyJson, nil
+}
+
+func asBuildReply(req messages.ASRequest, clientAddr *net.UDPAddr, adminPwd string) (messages.Reply, error) {
+
+	db, err := dao.OpenEncryptedASDb(config.AsDbPath, adminPwd)
+	if err != nil {
+		return errorReply("[TGS] ERROR: Generic server error", false), err
+	}
+	defer db.Close()
+
+	//RETRIVE CLIENT
+	client, err := dao.GetClientByClientId(req.ClientId, db)
+	if err != nil {
+		return errorReply("[AS] ERROR: client "+req.ClientId+" not registered or other problems", true), nil
+	}
+
+	//RETRIVE TGS
+	tgs, err := dao.GetTGSByTgsId(req.TGSId, db)
+	if err != nil {
+		return errorReply("[AS] ERROR: tgs "+req.TGSId+" not known or other problems", true), nil
+	}
 
 	//CREATE TOKEN
-	ticket := messages.Ticket{
+	timestamp := time.Now().UnixMilli()
+	keyClientTGS := security.GenerateRandomKey(config.SymmKeyDim)
+
+	ticket := dto.Ticket{
 		Key:           keyClientTGS,
 		ClientId:      req.ClientId,
-		ClientAddress: string(clientAddr.IP),
-		TGSId:         req.TGSId,
+		ClientAddress: clientAddr.IP.String(),
+		TargetId:      req.TGSId,
 		Timestamp:     timestamp,
-		Lifetime:      lifetime,
+		Lifetime:      config.Lifetime,
 	}
 
 	//ENCRYPT TOKEN
 	jsonTicket, err := json.Marshal(ticket)
 	if err != nil {
-		return nil, err
+		return errorReply("[TGS] ERROR: Generic server error", false), err
 	}
 
-	encryptedToken, err := security.SymmetricEncryption(jsonTicket, tgsKey)
+	encryptedTicket, err := security.SymmetricEncryption(jsonTicket, tgs.Key)
 	if err != nil {
-		return nil, err
+		return errorReply("[TGS] ERROR: Generic server error", false), err
 	}
 
-	//CREATE RESPONSE
-	reply := messages.ASReply{
-		KeyClientTGS:  keyClientTGS,
-		TGSId:         req.TGSId,
-		Timestamp:     timestamp,
-		Lifetime:      lifetime,
-		CryptedTicket: encryptedToken,
+	//CREATE TICKET DATA
+	ticketData := dto.TicketData{
+		Key:             keyClientTGS,
+		TargetId:        req.TGSId,
+		Timestamp:       timestamp,
+		Lifetime:        config.Lifetime,
+		EncryptedTicket: encryptedTicket,
+		EncTicketMac:    security.MacData(encryptedTicket, tgs.Key),
 	}
 
-	//ENCRYPT RESPONSE
-	jsonReply, err := json.Marshal(reply)
+	//ENCRYPT TICKET DATA
+	jsonTicketData, err := json.Marshal(ticketData)
 	if err != nil {
-		return nil, err
+		return errorReply("[TGS] ERROR: Generic server error", false), err
 	}
-	//...
+	encryptedTicketData, err := security.SymmetricEncryption(jsonTicketData, client.Key)
+	if err != nil {
+		return errorReply("[TGS] ERROR: Generic server error", false), err
+	}
 
-	fmt.Println(len(jsonReply))
-	return jsonReply, nil
+	reply := messages.Reply{
+		IsError:       false,
+		Message:       "OK",
+		EncryptedData: encryptedTicketData,
+		EncDataMac:    security.MacData(encryptedTicketData, client.Key),
+	}
+
+	fmt.Println("[AS]: OK " + req.ClientId + " -> " + req.TGSId)
+	return reply, nil
 }
 
 func asErrorHandler(err error) {
-	fmt.Println("Error recieving UDP packet")
+	fmt.Println("[AS] [GENERIC ERROR]: ", err)
+}
+
+func AddTGS(tgsId string, key []byte, adminPwd string) error {
+
+	db, err := dao.OpenEncryptedASDb(config.AsDbPath, adminPwd)
+	if err != nil {
+		return err
+	}
+
+	exists, err := dao.TgsExists(tgsId, db)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return dao.UpdateTgsKey(tgsId, key, db)
+	} else {
+		return dao.InsertTGS(tgsId, key, db)
+	}
+
 }
