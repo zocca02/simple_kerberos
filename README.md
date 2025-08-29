@@ -37,14 +37,27 @@ Under the /cmd directory there are all the fail containing main which will be co
 
 - [client/main.go](/cmd/client/main.go): start the client to perform one of the steps of the protocol
 - [service/main.go](/cmd/service/main.go): start the final service
-- [kerberos/main.go](/cmd/kerberos/main.go): start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from [/config/config.go](/configs/config.go)
+- [kerberos/main.go](/cmd/kerberos/main.go): start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from [config/config.go](/config/config.go)
 - [asconfig/main.go](/cmd/asconfig/main.go) and [tgsconfig/main.go](/cmd/tgsconfig/main.go): these files are supposed to be utilities that help add, delete and modify cleints data and pre-shared keys stored in local AS and TGSs dbs 
 
 ## Data Structures Files
+Messages are sent through the network as json string. This rappresentation makes easy marshaling and unmarshaling operations and prevent from compatibility problems. The following files contain the data structures used to convert from and to json format
 
-## Protocol Files
+- [/internal/messages/types.go](/internal/messages/types.go): contains all the data structures that model the messages structure. The three types of request (sent from the client) are modelled by ASRequest, TGSRequest and ServiceRequest, while for the replies there is a Reply structure which is supposed to contain the encrypted data, the mac and a flag to set in case of error. ServiceReply will be the payload of the reply of the service (which will fit into the data field of Reply once marshaled and encrypted)
+- [/internal/dto/types.go](/internal/messages/types.go): contains all the data structure that rappresent Ticket, Authenticator and rows of the db. TicketData contains all the data that AS or TGS will send with the ticket to the client (the ones the client can read once decrypted). This is a single data structure for both AS and TGS reply because the two messages contain the same types of information (the filed TargetId can contain the TGS ID or the service ID)
 
 ## Criptographic Files
+In [/internal/security/crypto.go](/internal/security/crypto.go) there are all the methods that perform all the necessary criptographic operations already describde.
 
 ## Data Access Related Files
+Under [/internal/dao](/internal/dao) there are all the files which contains functions that allow to access the dbs to perform all the operations on data like: retrieve ticket and their related data, store a new ticket received or delete an expired one for the client or register a user or a service or retrieve keys for AS and TGS
+
+## Protocol Files
+The files under the /internal/protocol contains the logic of the kerberos protocol for each entity. They implement the core of the kerberos protocol using the modules above to recieve and build messages and reply, encrypt/decrypt and check authenticity, access the db to retrieve, store or check data:
+- [client.go](/internal/protocol/client.go)
+- [as.go](/internal/protocol/as.go)
+- [tgs.go](/internal/protocol/tgs.go)
+- [service.go](/internal/protocol/service.go)
+
+
 
