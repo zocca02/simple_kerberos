@@ -3,6 +3,22 @@ A simple implementation of kerberos essentials features as project for the pract
 
 The project has been developed in go mainly because I wanted to try this language in a concrete sitation, but also because it's a good programming language for low level and it's suitable for implementing protocols.
 
+# Run The Application
+NOTE: since it's a demo project the Administrator password is always `admin`
+\
+\
+To run kerberos: `make run-kerberos`
+\
+To run client: `make run-client SERVERIP=<ip> CMD=<command>`
+\
+To run service: `make run-service ID=<serviceId> SERVICEIP=<ip> SERVICEPORT=<port>`
+\
+To configure AS: `make run-asconfig CMD=<cmd>`
+\
+To configure TGS: `make run-tgsconfig TGSNAME=<name> CMD=<cmd>`
+\
+To build everything (without run): `make build`
+
 # The Protocol
 The messages exchange implemented follows quite completely the below structure of original Kerberos messages with just two differences
 
