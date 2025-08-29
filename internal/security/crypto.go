@@ -12,16 +12,12 @@ import (
 	"io"
 )
 
-// Padding PKCS#7 (mandatory for CBC)
-// Chat-GPT
 func pad(src []byte, blockSize int) []byte {
 	padLen := blockSize - len(src)%blockSize
 	padding := bytes.Repeat([]byte{byte(padLen)}, padLen)
 	return append(src, padding...)
 }
 
-// Padding PKCS#7 (mandatory for CBC)
-// Chat-GPT
 func unpad(src []byte) ([]byte, error) {
 	length := len(src)
 	if length == 0 {
