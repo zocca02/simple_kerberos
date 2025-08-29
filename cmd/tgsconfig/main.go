@@ -19,7 +19,12 @@ var stdin = bufio.NewScanner(os.Stdin)
 func main() {
 
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: tgsName tgsconfig <command> [--flags]")
+		fmt.Println("Usage: tgsconfig tgsName <command>")
+		fmt.Println("Available commands:")
+		fmt.Println("add-service\t\tRegister a new service")
+		fmt.Println("show-services\t\tShow all the services registered")
+		fmt.Println("get-service\t\tRetrieve a specific service")
+		fmt.Println("delete-service\t\tDelete a specific service")
 		os.Exit(1)
 	}
 

@@ -19,7 +19,16 @@ var stdin = bufio.NewScanner(os.Stdin)
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: asconfig <command> [--flags]")
+		fmt.Println("Usage: asconfig <command>")
+		fmt.Println("Available commands:")
+		fmt.Println("add-client\t\tRegister a new client")
+		fmt.Println("show-cleints\t\tShow all the clients registered")
+		fmt.Println("get-client\t\tRetrieve a specific client")
+		fmt.Println("delete-client\t\tDelete a specific client")
+		fmt.Println("add-tgs\t\t\tRegister a new TGS")
+		fmt.Println("show-tgs\t\tShow all the TGS registered")
+		fmt.Println("get-tgs\t\t\tRetrieve a specific TGS")
+		fmt.Println("delete-tgs\t\tDelete a specific TGS")
 		os.Exit(1)
 	}
 

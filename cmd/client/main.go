@@ -18,7 +18,11 @@ var stdin = bufio.NewScanner(os.Stdin)
 func main() {
 
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: asconfig <server ip (as, tgs or service)> <command>")
+		fmt.Println("Usage: client <server ip (as, tgs or service)> <command>")
+		fmt.Println("Available commands:")
+		fmt.Println("auth-as\t\t\tAuthenticate to an AS")
+		fmt.Println("auth-tgs\t\tAuthenticate to a TGS")
+		fmt.Println("auth-service\t\tAuthenticate to a service")
 		os.Exit(1)
 	}
 

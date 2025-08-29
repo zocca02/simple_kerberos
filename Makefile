@@ -8,13 +8,13 @@ run-kerberos:
 	CGO_CFLAGS="-Wno-return-local-addr" go run ./cmd/kerberos
 
 run-client:
-	go run ./cmd/client
+	CGO_CFLAGS="-Wno-return-local-addr" go run ./cmd/client $(SERVERIP) $(CMD)
 
-run-server:
-	go run ./cmd/server
+run-service:
+	CGO_CFLAGS="-Wno-return-local-addr" go run ./cmd/service $(ID) $(SERVICEIP) $(SERVICEPORT)
 
 run-asconfig:
-	go run ./cmd/asconfig
+	CGO_CFLAGS="-Wno-return-local-addr" go run ./cmd/asconfig $(CMD)
 
 run-tgsconfig:
-	go run ./cmd/tgsconfig
+	CGO_CFLAGS="-Wno-return-local-addr" go run ./cmd/tgsconfig $(TGSNAME) $(CMD)

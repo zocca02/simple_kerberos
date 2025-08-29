@@ -58,7 +58,7 @@ func serviceBuildReply(req messages.ServiceRequest, clientAddr *net.UDPAddr, ser
 
 	ticketJson, err := security.SymmetricDecryption(req.EncryptedTicket, asKey)
 	var ticket dto.Ticket
-	json.Unmarshal(ticketJson, &ticket)
+	err = json.Unmarshal(ticketJson, &ticket)
 	if err != nil {
 		return errorReply("["+serviceId+"] ERROR: inconsistent message recieved", true), nil
 	}
@@ -75,7 +75,7 @@ func serviceBuildReply(req messages.ServiceRequest, clientAddr *net.UDPAddr, ser
 
 	authenticatorJson, err := security.SymmetricDecryption(req.EncryptedAuthenticator, ticket.Key)
 	var authenticator dto.Authenticator
-	json.Unmarshal(authenticatorJson, &authenticator)
+	err = json.Unmarshal(authenticatorJson, &authenticator)
 	if err != nil {
 		return errorReply("["+serviceId+"] ERROR: inconsistent authenticator recieved", true), nil
 	}
