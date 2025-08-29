@@ -1,5 +1,0 @@
-alice
-tgs1
-svc1
-
-
