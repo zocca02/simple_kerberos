@@ -37,7 +37,7 @@ Under the /cmd directory there are all the fail containing main which will be co
 
 - [client/main.go](/cmd/client/main.go): start the client to perform one of the steps of the protocol
 - [service/main.go](/cmd/service/main.go): start the final service
-- [kerberos/main.go](/cmd/kerberos/main.go): start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from [/config/config.go](/config/config.go)
+- [kerberos/main.go](/cmd/kerberos/main.go): start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from [/config/config.go](/configs/config.go)
 - [asconfig/main.go](/cmd/asconfig/main.go) and [tgsconfig/main.go](/cmd/tgsconfig/main.go): these files are supposed to be utilities that help add, delete and modify cleints data and pre-shared keys stored in local AS and TGSs dbs 
 
 ## Data Structures Files
