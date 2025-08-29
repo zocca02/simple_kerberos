@@ -9,7 +9,7 @@ The messages exchange implemented follows quite completely the below structure o
 - When sending a ticket, the AS or TGS server put the lifetime of the ticket also in the part encrypted only with the key shared with the client. In this way there is no risk because the lifetime is still included in the ticket as well (so the server can trust the received lifetime), but makes easier to the client the client know when its ticket is expired
 - To avoid possible attacks to the criptographic implementation choices descripted in the next section, every encrypted message and ticket has been authenticated with a Encrypt-then-MAC schema, so the necessary MACs have been added to the messages
 
-img here
+![Kerberos original protocol](imgs/kerberos_protocol.png)
 
 # Implementation Choices
 At the cryptographic level, the following choices have been made:
@@ -35,10 +35,10 @@ In this section there is a short documentation of the main files of the project
 ## Runnable Files
 Under the /cmd directory there are all the fail containing main which will be compiled in runnable files.
 
-- client/main.go: start the client to perform one of the steps of the protocol
-- service/main.go: start the final service
-- kerberos/main.go: start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from /config/config.go
-- asconfig/main.go and tgsconfig/main.go: these files are supposed to be utilities that help add, delete and modify cleints data and pre-shared keys stored in local AS and TGSs dbs 
+- [client/main.go](/cmd/client/main.go): start the client to perform one of the steps of the protocol
+- [service/main.go](/cmd/service/main.go): start the final service
+- [kerberos/main.go](/cmd/kerberos/main.go): start kerberos' servers (AS and TGSs). The main starts all the servers as goroutine: always a single AS and a list of TGSs retrieved from [/config/config.go](/config/config.go)
+- [asconfig/main.go](/cmd/asconfig/main.go) and [tgsconfig/main.go](/cmd/tgsconfig/main.go): these files are supposed to be utilities that help add, delete and modify cleints data and pre-shared keys stored in local AS and TGSs dbs 
 
 ## Data Structures Files
 
