@@ -8,6 +8,7 @@ import (
 	config "simple_kerberos/configs"
 	"simple_kerberos/internal/protocol"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	key, err = hex.DecodeString(string(key))
+	key, err = hex.DecodeString(strings.TrimSpace(string(key)))
 	if err != nil {
 		fmt.Println("ERROR: Malformed key")
 		os.Exit(1)

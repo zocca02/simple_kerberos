@@ -134,6 +134,13 @@ func addService(tgsName string) {
 		fmt.Println("File not specified or file not found: generate key")
 		key = security.GenerateRandomKey(config.SymmKeyDim)
 		fmt.Println(hex.EncodeToString(key))
+		err := os.WriteFile("data/"+serviceId+".key", []byte(hex.EncodeToString(key)), 0600)
+		if err != nil {
+			fmt.Println("Couldn't save key in data folder")
+		} else {
+			fmt.Println("Key saved in data/" + serviceId + ".key")
+		}
+
 	} else {
 		key, err = os.ReadFile(filepath.Clean(keyFilePath))
 		if err != nil {
