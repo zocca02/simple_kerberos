@@ -57,7 +57,7 @@ func readAdminPwAndOpenDb(tgsName string) *sql.DB {
 	adminPwd := url.QueryEscape(stdin.Text())
 
 	//OPEN DB
-	db, err := dao.OpenEncryptedASDb(config.TgsDbPath+tgsName+".db", adminPwd)
+	db, err := dao.OpenEncryptedTGSDb(config.TgsDbPath+tgsName+".db", adminPwd)
 	if err != nil {
 		panic(err)
 	}
