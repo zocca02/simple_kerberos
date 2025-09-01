@@ -113,24 +113,26 @@ func InitNewClientDb(path string) error {
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS tgsTickets (
             id 			INTEGER PRIMARY KEY AUTOINCREMENT,
-            clientId 	TEXT NOT NULL UNIQUE,
-			tgsId 		TEXT NOT NULL UNIQUE,
+            clientId 	TEXT NOT NULL,
+			tgsId 		TEXT NOT NULL,
 			ticket		BLOB NOT NULL,
 			ticketMac	BLOB NOT NULL,
 			key 		BLOB NOT NULL,
 			lifetime	BIGINT,
-			issueTime	BIGINT		
+			issueTime	BIGINT,
+			UNIQUE(clientId, tgsId)	
         );
 
 		CREATE TABLE IF NOT EXISTS serviceTickets (
             id 			INTEGER PRIMARY KEY AUTOINCREMENT,
-            clientId 	TEXT NOT NULL UNIQUE,
-			serviceId	TEXT NOT NULL UNIQUE,
+            clientId 	TEXT NOT NULL,
+			serviceId	TEXT NOT NULL,
 			ticket		BLOB NOT NULL,
 			ticketMac	BLOB NOT NULL,
 			key 		BLOB NOT NULL,
 			lifetime	BIGINT,
-			issueTime	BIGINT	
+			issueTime	BIGINT,
+			UNIQUE(clientId, serviceId)
         );
     `)
 	if err != nil {
