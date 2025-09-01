@@ -32,7 +32,7 @@ func StartTGSDefaultIp(tgsId string, key []byte, adminPwd string) {
 }
 
 func startTGS(serverAddr net.UDPAddr, tgsId string, key []byte, adminPwd string) {
-	fmt.Println("Kerberos TGS listening on " + serverAddr.IP.String() + ":" + fmt.Sprint(serverAddr.Port) + "...")
+	fmt.Println("Kerberos TGS " + tgsId + " listening on " + serverAddr.IP.String() + ":" + fmt.Sprint(serverAddr.Port) + "...")
 	network.ListenUDP(serverAddr, 1024, func(b []byte, u *net.UDPAddr) ([]byte, error) {
 		return tgsRequestHandler(b, u, tgsId, key, adminPwd)
 	}, tgsErrorHandler)
