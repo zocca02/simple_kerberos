@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	config "simple_kerberos/configs"
 )
 
 func pad(src []byte, blockSize int) []byte {
@@ -43,7 +44,7 @@ func GenerateRandomKey(keyDim int) []byte {
 
 func SymmetricEncryption(plaintext []byte, key []byte) ([]byte, error) {
 	//INIT AES ALGORITHM
-	block, err := aes.NewCipher(key)
+	block, err := aes.NewCipher(generateCryptKey(key, config.SymmKeyDim))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,7 @@ func SymmetricEncryption(plaintext []byte, key []byte) ([]byte, error) {
 
 func SymmetricDecryption(ciphertext []byte, key []byte) ([]byte, error) {
 	//INIT AES ALGORITHM
-	block, err := aes.NewCipher(key)
+	block, err := aes.NewCipher(generateCryptKey(key, config.SymmKeyDim))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,21 @@ func GenerateClientKeyFromPwd(pwd string, keyDim int) ([]byte, error) {
 }
 
 func MacData(data []byte, key []byte) []byte {
-	mac := hmac.New(sha256.New, key)
+	mac := hmac.New(sha256.New, generateMacKey(key, config.SymmKeyDim))
 	mac.Write(data)
 	return mac.Sum(nil)
+}
+
+func generateMacKey(key []byte, keyDim int) []byte {
+	sha := sha256.New()
+	sha.Write(key)
+	sha.Write([]byte("macKey"))
+	return sha.Sum(nil)[:keyDim/8]
+}
+
+func generateCryptKey(key []byte, keyDim int) []byte {
+	sha := sha256.New()
+	sha.Write(key)
+	sha.Write([]byte("cryptKey"))
+	return sha.Sum(nil)[:keyDim/8]
 }
